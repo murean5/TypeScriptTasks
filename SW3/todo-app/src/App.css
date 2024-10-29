@@ -1,0 +1,34 @@
+.app {
+    text-align: center;
+  }
+  
+  .task-input {
+    margin: 1rem;
+  }
+  
+  .task-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .task-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  .task-list li.completed span {
+    color: green;
+    text-decoration: line-through;
+  }
+  
+  button {
+    margin-left: 0.5rem;
+  }
+  
+  .task-history {
+    margin-top: 1rem;
+  }
+  
