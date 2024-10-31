@@ -1,4 +1,3 @@
-// `todo-app/src/App.tsx`
 import React, { Component } from 'react';
 import TaskList from './TaskList';
 import TaskInput from './TaskInput';

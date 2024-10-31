@@ -1,4 +1,3 @@
-// `todo-app/src/TaskList.tsx`
 import React from 'react';
 import { Task } from './types';
 

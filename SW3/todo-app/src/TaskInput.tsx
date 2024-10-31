@@ -1,4 +1,3 @@
-// `todo-app/src/TaskInput.tsx`
 import React, { useRef, useState } from 'react';
 
 // Определение пропсов для компонента TaskInput
