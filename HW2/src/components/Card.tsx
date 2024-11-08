@@ -21,9 +21,7 @@ const Card: React.FC<CardProps> = ({ name, description, category, quantity, unit
             )}
             <h3 className={styles['card-title']}>{name}</h3>
             <p className={styles['card-category']}>{category}</p>
-            <p className={styles['card-description']}>
-                {description.length > 70 ? `${description.substring(0, 67)}...` : description}
-            </p>
+            <p className={styles['card-description']}>{description}</p>
             <p className={styles['card-unit']}>Единица: {unit}</p>
             <p className={styles['card-quantity']}>Осталось позиций: {quantity}</p>
         </div>
