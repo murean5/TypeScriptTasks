@@ -1,19 +1,34 @@
 import React, { ReactNode } from 'react';
-import styles from './Modal.module.css';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { styled } from '@mui/system';
 
 type ModalProps = {
     onClose: () => void;
+    open: boolean;
+    title: string;
     children: ReactNode;
 };
 
-const Modal: React.FC<ModalProps> = ({ onClose, children }) => {
+const CustomDialogContent = styled(DialogContent)(({ theme }) => ({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    fontSize: '16px',
+    color: theme.palette.text.primary,
+    overflowY: 'auto',
+}));
+
+const Modal: React.FC<ModalProps> = ({ onClose, open, title, children }) => {
     return (
-        <div className={styles.modal}>
-            <button onClick={onClose}>Закрыть</button>
-            <div className={styles.modalContent}>
+        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+            <DialogTitle>{title}</DialogTitle>
+            <CustomDialogContent dividers>
                 {children}
-            </div>
-        </div>
+            </CustomDialogContent>
+            <DialogActions>
+                <Button onClick={onClose} color="primary">Закрыть</Button>
+            </DialogActions>
+        </Dialog>
     );
 };
 
