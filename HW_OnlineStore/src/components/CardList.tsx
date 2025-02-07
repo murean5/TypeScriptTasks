@@ -1,33 +1,25 @@
 import React, { useState } from 'react';
-import Card from './Card'; // Corrected import statement
-import { Typography, Tooltip, Dialog, DialogTitle, DialogContent, Pagination } from '@mui/material';
+import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { RootState } from '../store';
+import { removeProduct, Product } from '../slices/productsSlice';
+import Card from './Card';
+import { Typography, Tooltip, Dialog, DialogTitle, DialogContent, Pagination, Button, Box } from '@mui/material';
 import { styled } from '@mui/system';
+import Modal from './Modal';
+import AddProductForm from './AddProductForm';
 
-type Product = {
-    name: string;
-    description: string;
-    category: string;
-    quantity: number;
-    unit: string;
-    image?: string;
-};
-
-type CardListProps = {
-    filters: {
-        productName: string;
-        inStockOnly: boolean;
-        category: string;
-    };
-};
-
-const CardListContainer = styled('div')(({ theme }) => ({
+const CardListContainer = styled(Box)(({ theme }) => ({
     backgroundColor: theme.palette.background.default,
     padding: '20px',
-    height: '100vh',
-    width: '100vw',
+    height: 'calc(100vh - 64px)',
+    width: '100%',
+    overflow: 'hidden',
+    boxSizing: 'border-box',
+    marginTop: '64px',
 }));
 
-const CardListWrapper = styled('div')({
+const CardListWrapper = styled(Box)({
     display: 'flex',
     flexWrap: 'wrap',
     gap: '20px',
@@ -35,129 +27,47 @@ const CardListWrapper = styled('div')({
     marginTop: '20px',
 });
 
-const PaginationContainer = styled('div')({
+const PaginationContainer = styled(Box)({
     display: 'flex',
-    justifyContent: 'center',
+    flexDirection: 'column',
+    alignItems: 'center',
     width: '100%',
+    marginTop: '20px',
     marginBottom: '20px',
 });
 
+const AddButtonContainer = styled(Box)({
+    display: 'flex',
+    justifyContent: 'center',
+    marginTop: '20px',
+});
+
+const CardContainer = styled(Box)({
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    marginBottom: '20px',
+    '& button': {
+        marginTop: '10px',
+    },
+});
+
+type CardListProps = {
+    filters: { productName: string; inStockOnly: boolean; category: string };
+};
+
 const CardList: React.FC<CardListProps> = ({ filters }) => {
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const products = useSelector((state: RootState) => state.products.products);
     const [modalOpen, setModalOpen] = useState(false);
+    const [addProductModalOpen, setAddProductModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [page, setPage] = useState(1);
     const productsPerPage = 10;
 
-    const products: Product[] = [
-        {
-            name: 'Яблоки',
-            description: 'Обычные зеленые яблоки.',
-            category: 'Фрукты',
-            quantity: 2,
-            unit: 'кг',
-            image: '/src/imgs/apples.png',
-        },
-        {
-            name: 'Алоэ',
-            description: 'Супер длинное описание алоэ, чтобы продемонстрировать перенос строки и замену с помощью многоточия, когда текст длиннее одной строки.',
-            category: 'Растения',
-            quantity: 14,
-            unit: 'шт',
-            image: undefined,
-        },
-        {
-            name: 'Сок',
-            description: 'Очень вкусный апельсиновый сок.',
-            category: 'Напитки',
-            quantity: 3,
-            unit: 'л',
-            image: '/src/imgs/juice.png',
-        },
-        {
-            name: 'Сок',
-            description: 'Очень вкусный апельсиновый сок.',
-            category: 'Напитки',
-            quantity: 3,
-            unit: 'л',
-            image: '/src/imgs/juice.png',
-        },
-        {
-            name: 'Сок',
-            description: 'Очень вкусный апельсиновый сок.',
-            category: 'Напитки',
-            quantity: 3,
-            unit: 'л',
-            image: '/src/imgs/juice.png',
-        },
-        {
-            name: 'Сок',
-            description: 'Очень вкусный апельсиновый сок.',
-            category: 'Напитки',
-            quantity: 3,
-            unit: 'л',
-            image: '/src/imgs/juice.png',
-        },
-        {
-            name: 'Сок',
-            description: 'Очень вкусный апельсиновый сок.',
-            category: 'Напитки',
-            quantity: 3,
-            unit: 'л',
-            image: '/src/imgs/juice.png',
-        },
-        {
-            name: 'Сок',
-            description: 'Очень вкусный апельсиновый сок.',
-            category: 'Напитки',
-            quantity: 0,
-            unit: 'л',
-            image: '/src/imgs/juice.png',
-        },
-        {
-            name: 'Сок',
-            description: 'Очень вкусный апельсиновый сок.',
-            category: 'Напитки',
-            quantity: 0,
-            unit: 'л',
-            image: '/src/imgs/juice.png',
-        },
-        {
-            name: 'Сок',
-            description: 'Очень вкусный апельсиновый сок.',
-            category: 'Напитки',
-            quantity: 0,
-            unit: 'л',
-            image: '/src/imgs/juice.png',
-        },
-        {
-            name: 'Сок',
-            description: 'Очень вкусный апельсиновый сок.',
-            category: 'Напитки',
-            quantity: 3,
-            unit: 'л',
-            image: '/src/imgs/juice.png',
-        },
-        {
-            name: 'Сок',
-            description: 'Очень вкусный апельсиновый сок.',
-            category: 'Напитки',
-            quantity: 3,
-            unit: 'л',
-            image: '/src/imgs/juice.png',
-        },
-        {
-            name: 'Сок',
-            description: 'Очень вкусный апельсиновый сок.',
-            category: 'Напитки',
-            quantity: 3,
-            unit: 'л',
-            image: '/src/imgs/juice.png',
-        }
-    ];
-
     const handleCardClick = (product: Product) => {
-        setSelectedProduct(product);
-        setModalOpen(true);
+        navigate(`/products/${product.id}`);
     };
 
     const handleClose = () => {
@@ -169,17 +79,53 @@ const CardList: React.FC<CardListProps> = ({ filters }) => {
         setPage(value);
     };
 
-    const filteredProducts = products.filter(product => {
-        const matchesName = new RegExp(filters.productName, 'i').test(product.name);
-        const matchesCategory = filters.category === '' || product.category === filters.category;
-        const matchesStock = !filters.inStockOnly || product.quantity > 0;
-        return matchesName && matchesCategory && matchesStock;
+    const handleDeleteProduct = (id: number) => {
+        dispatch(removeProduct(id));
+    };
+
+    const handleAddProduct = () => {
+        setAddProductModalOpen(true);
+    };
+
+    const handleAddProductClose = () => {
+        setAddProductModalOpen(false);
+    };
+
+    const filteredProducts = products.filter((product) => {
+        if (filters.productName && !product.name.toLowerCase().includes(filters.productName.toLowerCase())) {
+            return false;
+        }
+        if (filters.inStockOnly && product.quantity === 0) {
+            return false;
+        }
+        if (filters.category && product.category !== filters.category) {
+            return false;
+        }
+        return true;
     });
 
     const paginatedProducts = filteredProducts.slice((page - 1) * productsPerPage, page * productsPerPage);
 
     return (
         <CardListContainer>
+            <CardListWrapper>
+                {paginatedProducts.map((product, index) => (
+                    <Tooltip key={index} title={product.description}>
+                        <CardContainer>
+                            <Card
+                                name={product.name}
+                                description={product.description}
+                                category={product.category}
+                                quantity={product.quantity}
+                                unit={product.unit}
+                                image={product.img_url}
+                                onClick={() => handleCardClick(product)}
+                            />
+                            <Button variant="outlined" color="secondary" onClick={() => handleDeleteProduct(product.id)}>Удалить</Button>
+                        </CardContainer>
+                    </Tooltip>
+                ))}
+            </CardListWrapper>
             <PaginationContainer>
                 <Pagination
                     count={Math.ceil(filteredProducts.length / productsPerPage)}
@@ -187,23 +133,9 @@ const CardList: React.FC<CardListProps> = ({ filters }) => {
                     onChange={handlePageChange}
                 />
             </PaginationContainer>
-            <CardListWrapper>
-                {paginatedProducts.map((product, index) => (
-                    <Tooltip key={index} title={product.description}>
-                        <div>
-                            <Card
-                                name={product.name}
-                                description={product.description}
-                                category={product.category}
-                                quantity={product.quantity}
-                                unit={product.unit}
-                                image={product.image}
-                                onClick={() => handleCardClick(product)}
-                            />
-                        </div>
-                    </Tooltip>
-                ))}
-            </CardListWrapper>
+            <AddButtonContainer>
+                <Button variant="contained" color="primary" onClick={handleAddProduct}>Добавить товар</Button>
+            </AddButtonContainer>
             <Dialog open={modalOpen} onClose={handleClose} maxWidth="md" fullWidth>
                 {selectedProduct && (
                     <>
@@ -212,17 +144,19 @@ const CardList: React.FC<CardListProps> = ({ filters }) => {
                             <Typography>{selectedProduct.description}</Typography>
                             <br></br>
                             <Typography><strong>Категория:</strong> {selectedProduct.category}</Typography>
-                            <Typography><strong>Количество:</strong> {selectedProduct.quantity} {selectedProduct.unit}
-                            </Typography>
+                            <Typography><strong>Количество:</strong> {selectedProduct.quantity} {selectedProduct.unit}</Typography>
                             <br></br>
-                            <img src={selectedProduct.image || 'https://placehold.co/600x400/png?text=No+image'}
-                                 alt={selectedProduct.name} style={{width: '100%'}} onError={(e) => {
+                            <img src={selectedProduct.img_url || 'https://placehold.co/600x400/png?text=No+image'}
+                                 alt={selectedProduct.name} style={{ width: '100%' }} onError={(e) => {
                                 e.currentTarget.src = 'https://placehold.co/600x400/png?text=No+image';
                             }}/>
                         </DialogContent>
                     </>
                 )}
             </Dialog>
+            <Modal open={addProductModalOpen} onClose={handleAddProductClose} title="Добавить товар">
+                <AddProductForm onClose={handleAddProductClose} />
+            </Modal>
         </CardListContainer>
     );
 };

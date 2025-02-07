@@ -1,19 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import CardList from './components/CardList';
+import ProductDetails from './components/ProductDetails';
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
-import './App.css';
+import UserProfile from './components/UserProfile';
+import CategoriesPage from './components/CategoriesPage';
+import { Box, styled } from '@mui/material';
+
+const MainContainer = styled(Box)({
+    height: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+});
+
+const ContentContainer = styled(Box)({
+    flex: 1,
+    overflow: 'hidden',
+});
 
 const App: React.FC = () => {
-    const [isSidebarVisible, setSidebarVisible] = useState(false); // Set to false by default
-    const [filters, setFilters] = useState({
-        productName: '',
-        inStockOnly: false,
-        category: '',
-    });
+    const [isSidebarVisible, setSidebarVisible] = useState(false);
+    const [filters, setFilters] = useState({ productName: '', inStockOnly: false, category: '' });
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.pathname !== '/') {
+            setSidebarVisible(false);
+        }
+    }, [location]);
 
     const toggleSidebar = () => {
-        setSidebarVisible(!isSidebarVisible);
+        if (location.pathname === '/') {
+            setSidebarVisible(!isSidebarVisible);
+        } else {
+            setSidebarVisible(false);
+        }
     };
 
     const applyFilters = (newFilters: { productName: string; inStockOnly: boolean; category: string }) => {
@@ -21,14 +44,30 @@ const App: React.FC = () => {
     };
 
     return (
-        <div>
+        <MainContainer>
             <Navbar toggleSidebar={toggleSidebar} />
-            <div style={{ display: 'flex', marginTop: '64px' }}>
-                <Sidebar isVisible={isSidebarVisible} toggleVisibility={toggleSidebar} applyFilters={applyFilters} />
-                <CardList filters={filters} />
-            </div>
-        </div>
+            <Sidebar
+                isVisible={isSidebarVisible}
+                toggleVisibility={toggleSidebar}
+                applyFilters={applyFilters}
+            />
+            <ContentContainer>
+                <Routes>
+                    <Route path="/products/:id" element={<ProductDetails />} />
+                    <Route path="/products" element={<CardList filters={filters} />} />
+                    <Route path="/" element={<CardList filters={filters} />} />
+                    <Route path="/profile" element={<UserProfile />} />
+                    <Route path="/categories" element={<CategoriesPage />} />
+                </Routes>
+            </ContentContainer>
+        </MainContainer>
     );
 };
 
-export default App;
+const AppWrapper: React.FC = () => (
+    <Router>
+        <App />
+    </Router>
+);
+
+export default AppWrapper;

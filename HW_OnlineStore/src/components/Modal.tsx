@@ -15,7 +15,7 @@ const CustomDialogContent = styled(DialogContent)(({ theme }) => ({
     alignItems: 'center',
     fontSize: '16px',
     color: theme.palette.text.primary,
-    overflowY: 'auto',
+    overflow: 'hidden',
 }));
 
 const Modal: React.FC<ModalProps> = ({ onClose, open, title, children }) => {

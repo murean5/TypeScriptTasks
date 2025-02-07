@@ -1,8 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { TextField, Checkbox, FormControlLabel, Select, MenuItem, Button, IconButton } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import { styled } from '@mui/system';
 import theme from '../theme';
+import { useLocation } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState } from '../store';
+import { addCategory } from '../slices/categoriesSlice';
 
 type SidebarProps = {
     isVisible: boolean;
@@ -10,7 +14,7 @@ type SidebarProps = {
     applyFilters: (filters: { productName: string; inStockOnly: boolean; category: string }) => void;
 };
 
-const SidebarContainer = styled('div')(({ isVisible }: { isVisible: boolean }) => ({
+const SidebarContainer = styled('div')<{ isVisible: boolean; isMainPage: boolean }>(({ isVisible, isMainPage }) => ({
     width: '250px',
     height: 'calc(100% - 40px)',
     padding: '20px',
@@ -23,7 +27,7 @@ const SidebarContainer = styled('div')(({ isVisible }: { isVisible: boolean }) =
     top: '40px',
     left: '0',
     zIndex: 200,
-    transition: 'transform 0.3s ease-in-out',
+    transition: isMainPage ? 'transform 0.3s ease-in-out' : 'none',
     willChange: 'transform',
     boxShadow: '3px 0px 15px 0px rgb(0 0 0 / 22%)',
     transform: isVisible ? 'translateX(0)' : 'translateX(-101%)',
@@ -39,6 +43,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, toggleVisibility, applyFil
     const [productName, setProductName] = useState('');
     const [inStockOnly, setInStockOnly] = useState(false);
     const [category, setCategory] = useState('');
+    const location = useLocation();
+    const isMainPage = location.pathname === '/';
+    const dispatch = useDispatch();
+    const categories = useSelector((state: RootState) => Array.from(state.categories.categories));
+    const products = useSelector((state: RootState) => state.products.products);
+
+    useEffect(() => {
+        if (categories.length === 0) {
+            const uniqueCategories = new Set(products.map(product => product.category));
+            uniqueCategories.forEach(cat => dispatch(addCategory(cat)));
+        }
+    }, [categories, products, dispatch]);
 
     const handleSearch = () => {
         applyFilters({ productName, inStockOnly, category });
@@ -61,7 +77,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, toggleVisibility, applyFil
     };
 
     return (
-        <SidebarContainer isVisible={isVisible}>
+        <SidebarContainer isVisible={isVisible} isMainPage={isMainPage}>
             <InputContainer>
                 <TextField
                     label="Название товара"
@@ -82,9 +98,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isVisible, toggleVisibility, applyFil
                     variant="outlined"
                 >
                     <MenuItem value="">Все категории</MenuItem>
-                    <MenuItem value="Фрукты">Фрукты</MenuItem>
-                    <MenuItem value="Растения">Растения</MenuItem>
-                    <MenuItem value="Напитки">Напитки</MenuItem>
+                    {categories.map((cat) => (
+                        <MenuItem key={cat} value={cat}>
+                            {cat}
+                        </MenuItem>
+                    ))}
                 </Select>
                 <IconButton onClick={clearCategory}>
                     <ClearIcon />
