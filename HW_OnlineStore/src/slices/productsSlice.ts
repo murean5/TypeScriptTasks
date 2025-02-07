@@ -1,6 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export type Product = {
+type Product = {
     id: number;
     name: string;
     description: string;
@@ -56,24 +56,33 @@ const productsSlice = createSlice({
         addProduct: (state, action: PayloadAction<Product>) => {
             state.products.push(action.payload);
         },
-        removeProduct: (state, action: PayloadAction<number>) => {
-            state.products = state.products.filter(product => product.id !== action.payload);
-        },
         updateProduct: (state, action: PayloadAction<Product>) => {
             const index = state.products.findIndex(product => product.id === action.payload.id);
             if (index !== -1) {
                 state.products[index] = action.payload;
             }
         },
-        updateProductCategory: (state, action: PayloadAction<{ oldName: string, newName: string }>) => {
-            state.products.forEach(product => {
-                if (product.category === action.payload.oldName) {
-                    product.category = action.payload.newName;
-                }
-            });
+        removeProduct: (state, action: PayloadAction<number>) => {
+            state.products = state.products.filter(product => product.id !== action.payload);
+        },
+        updateProductCategory: (
+            state,
+            action: PayloadAction<{ productId: number; newCategory: string }>
+        ) => {
+            const { productId, newCategory } = action.payload;
+            const product = state.products.find(p => p.id === productId);
+            if (product) {
+                product.category = newCategory;
+            }
         },
     },
 });
 
-export const { addProduct, removeProduct, updateProduct, updateProductCategory } = productsSlice.actions;
+export const {
+    addProduct,
+    updateProduct,
+    removeProduct,
+    updateProductCategory,
+} = productsSlice.actions;
+
 export default productsSlice.reducer;

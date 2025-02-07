@@ -26,13 +26,13 @@ const App: React.FC = () => {
     const location = useLocation();
 
     useEffect(() => {
-        if (location.pathname !== '/') {
+        if (location.pathname !== '/' && location.pathname !== '/products') {
             setSidebarVisible(false);
         }
     }, [location]);
 
     const toggleSidebar = () => {
-        if (location.pathname === '/') {
+        if (location.pathname === '/' || location.pathname === '/products') {
             setSidebarVisible(!isSidebarVisible);
         } else {
             setSidebarVisible(false);

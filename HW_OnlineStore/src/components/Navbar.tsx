@@ -21,12 +21,13 @@ type NavbarProps = {
 
 const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
     const location = useLocation();
-    const isMainPage = location.pathname === '/';
+
+    const isProductsPage = location.pathname === '/' || location.pathname === '/products';
 
     return (
         <CustomAppBar position="fixed">
             <Toolbar style={{ justifyContent: 'space-between' }}>
-                <IconButton color="inherit" onClick={toggleSidebar} disabled={!isMainPage}>
+                <IconButton color="inherit" onClick={toggleSidebar} disabled={!isProductsPage}>
                     <SearchIcon />
                 </IconButton>
                 <CustomButton component={Link} to="/">Товары</CustomButton>
@@ -38,5 +39,6 @@ const Navbar: React.FC<NavbarProps> = ({ toggleSidebar }) => {
         </CustomAppBar>
     );
 };
+
 
 export default Navbar;

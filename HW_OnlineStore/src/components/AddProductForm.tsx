@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addProduct, Product } from '../slices/productsSlice';
+import { addProduct } from '../slices/productsSlice';
 import { RootState } from '../store';
-import { TextField, Button, Box, Select, MenuItem } from '@mui/material';
+import { TextField, Button, Select, MenuItem, Box } from '@mui/material';
 import { styled } from '@mui/system';
 
 const FormContainer = styled(Box)({
@@ -10,22 +10,40 @@ const FormContainer = styled(Box)({
     flexDirection: 'column',
     gap: '16px',
     width: '100%',
+    maxWidth: '500px',
+    margin: '0 auto',
+    backgroundColor: '#fff',
+    padding: '20px',
+    borderRadius: '8px',
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
 });
+
+const isValidUrl = (url: string) => {
+    try {
+        new URL(url);
+        return true;
+    } catch {
+        return false;
+    }
+};
 
 const AddProductForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const dispatch = useDispatch();
-    const categories = useSelector((state: RootState) => state.categories.categories);
-    const [product, setProduct] = useState<Omit<Product, 'id'>>({
+    const categories = useSelector((state: RootState) => Array.from(state.categories.categories));
+
+    const [product, setProduct] = useState({
         name: '',
         description: '',
-        categoryId: '',
+        category: '',
         quantity: 0,
         unit: '',
         price: 0,
         img_url: '',
     });
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
+    const handleChange = (
+        e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
+    ) => {
         const { name, value } = e.target;
         setProduct((prevProduct) => ({
             ...prevProduct,
@@ -35,28 +53,32 @@ const AddProductForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (product.price <= 0 || product.quantity <= 0) {
-            alert('Цена и количество должны быть больше 0');
+
+        if (!product.category) {
+            alert('Выберите категорию');
             return;
         }
-        const productToSubmit = {
+
+        const imgUrl = isValidUrl(product.img_url) ? product.img_url : 'https://placehold.co/300x200/png?text=No+image';
+
+        const newProduct = {
             ...product,
             id: Date.now(),
+            img_url: imgUrl,
         };
-        dispatch(addProduct(productToSubmit));
+
+        dispatch(addProduct(newProduct));
         onClose();
     };
 
     return (
         <FormContainer component="form" onSubmit={handleSubmit}>
             <TextField
-                label="Название"
+                label="Название товара"
                 name="name"
                 value={product.name}
                 onChange={handleChange}
                 fullWidth
-                variant="outlined"
-                size="small"
                 required
             />
             <TextField
@@ -65,23 +87,20 @@ const AddProductForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 value={product.description}
                 onChange={handleChange}
                 fullWidth
-                variant="outlined"
-                size="small"
                 required
             />
             <Select
-                name="categoryId"
-                value={product.categoryId}
+                name="category"
+                value={product.category}
                 onChange={handleChange}
                 displayEmpty
                 fullWidth
-                variant="outlined"
-                size="small"
+                required
             >
                 <MenuItem value="">Выберите категорию</MenuItem>
                 {categories.map((cat) => (
-                    <MenuItem key={cat.id} value={cat.id}>
-                        {cat.name}
+                    <MenuItem key={cat} value={cat}>
+                        {cat}
                     </MenuItem>
                 ))}
             </Select>
@@ -92,8 +111,6 @@ const AddProductForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 value={product.quantity}
                 onChange={handleChange}
                 fullWidth
-                variant="outlined"
-                size="small"
                 required
             />
             <TextField
@@ -102,8 +119,6 @@ const AddProductForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 value={product.unit}
                 onChange={handleChange}
                 fullWidth
-                variant="outlined"
-                size="small"
                 required
             />
             <TextField
@@ -113,8 +128,6 @@ const AddProductForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 value={product.price}
                 onChange={handleChange}
                 fullWidth
-                variant="outlined"
-                size="small"
                 required
             />
             <TextField
@@ -123,11 +136,9 @@ const AddProductForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                 value={product.img_url}
                 onChange={handleChange}
                 fullWidth
-                variant="outlined"
-                size="small"
             />
             <Button type="submit" variant="contained" color="primary">
-                Сохранить
+                Добавить товар
             </Button>
         </FormContainer>
     );
