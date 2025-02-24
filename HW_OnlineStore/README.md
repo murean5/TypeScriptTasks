@@ -9,4 +9,4 @@
 Запускаем сервер [server.ts](src/server.ts)
 
 ## Проверка запросов
-К проекту подключен **Swagger**, по адресу `http://localhost:3000/api-docs`
+К проекту подключен **Swagger** по адресу `http://localhost:3000/api-docs`
