@@ -46,11 +46,11 @@ const App: React.FC = () => {
     return (
         <MainContainer>
             <Navbar toggleSidebar={toggleSidebar} />
-            <Sidebar
-                isVisible={isSidebarVisible}
-                toggleVisibility={toggleSidebar}
-                applyFilters={applyFilters}
-            />
+            {/*<Sidebar*/}
+            {/*    isVisible={isSidebarVisible}*/}
+            {/*    toggleVisibility={toggleSidebar}*/}
+            {/*    applyFilters={applyFilters}*/}
+            {/*/>*/}
             <ContentContainer>
                 <Routes>
                     <Route path="/products/:id" element={<ProductDetails />} />

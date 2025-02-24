@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../store';
-import { removeProduct, Product } from '../slices/productsSlice';
+import { fetchProducts, removeProduct } from '../slices/productsSlice';
+import Product from '../models/Product';
 import Card from './Card';
 import { Typography, Tooltip, Dialog, DialogTitle, DialogContent, Pagination, Button, Box } from '@mui/material';
 import { styled } from '@mui/system';
@@ -59,12 +60,16 @@ type CardListProps = {
 const CardList: React.FC<CardListProps> = ({ filters }) => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const products = useSelector((state: RootState) => state.products.products);
+    const products = useSelector((state: RootState) => state.products);
     const [modalOpen, setModalOpen] = useState(false);
     const [addProductModalOpen, setAddProductModalOpen] = useState(false);
     const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const [page, setPage] = useState(1);
     const productsPerPage = 10;
+
+    useEffect(() => {
+        dispatch(fetchProducts());
+    }, [dispatch]);
 
     const handleCardClick = (product: Product) => {
         navigate(`/products/${product.id}`);
@@ -91,7 +96,7 @@ const CardList: React.FC<CardListProps> = ({ filters }) => {
         setAddProductModalOpen(false);
     };
 
-    const filteredProducts = products.filter((product) => {
+    const filteredProducts = Array.isArray(products) ? products.filter((product: Product) => {
         if (filters.productName && !product.name.toLowerCase().includes(filters.productName.toLowerCase())) {
             return false;
         }
@@ -102,7 +107,7 @@ const CardList: React.FC<CardListProps> = ({ filters }) => {
             return false;
         }
         return true;
-    });
+    }) : [];
 
     const paginatedProducts = filteredProducts.slice((page - 1) * productsPerPage, page * productsPerPage);
 

@@ -1,30 +1,42 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { getCategories, createCategory, updateCategory, deleteCategory } from '../services/api';
 
-type CategoriesState = {
-    categories: Set<string>;
-};
+export const fetchCategories = createAsyncThunk('categories/fetchCategories', async () => {
+    const response = await getCategories();
+    return response.data;
+});
 
-const initialState: CategoriesState = {
-    categories: new Set(),
-};
+export const addCategory = createAsyncThunk('categories/addCategory', async (name: string) => {
+    const response = await createCategory(name);
+    return response.data;
+});
+
+export const editCategory = createAsyncThunk('categories/editCategory', async ({ id, name }: { id: number, name: string }) => {
+    const response = await updateCategory(id, name);
+    return response.data;
+});
+
+export const removeCategory = createAsyncThunk('categories/removeCategory', async (id: number) => {
+    await deleteCategory(id);
+    return id;
+});
 
 const categoriesSlice = createSlice({
     name: 'categories',
-    initialState,
-    reducers: {
-        addCategory: (state, action: PayloadAction<string>) => {
-            state.categories.add(action.payload);
-        },
-        removeCategory: (state, action: PayloadAction<string>) => {
-            state.categories.delete(action.payload);
-        },
-        updateCategory: (state, action: PayloadAction<{ oldName: string, newName: string }>) => {
-            if (state.categories.delete(action.payload.oldName)) {
-                state.categories.add(action.payload.newName);
-            }
-        },
+    initialState: [],
+    reducers: {},
+    extraReducers: (builder) => {
+        builder
+            .addCase(fetchCategories.fulfilled, (state, action) => action.payload)
+            .addCase(addCategory.fulfilled, (state, action) => { state.push(action.payload); })
+            .addCase(editCategory.fulfilled, (state, action) => {
+                const index = state.findIndex(category => category.id === action.payload.id);
+                if (index !== -1) state[index] = action.payload;
+            })
+            .addCase(removeCategory.fulfilled, (state, action) => {
+                return state.filter(category => category.id !== action.payload);
+            });
     },
 });
 
-export const { addCategory, removeCategory, updateCategory } = categoriesSlice.actions;
 export default categoriesSlice.reducer;

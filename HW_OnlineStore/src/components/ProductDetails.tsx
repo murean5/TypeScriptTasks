@@ -36,7 +36,7 @@ const ProductDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const product = useSelector((state: RootState) => state.products.products.find(p => p.id === Number(id)));
+    const product = useSelector((state: RootState) => state.products.find(p => p.id === Number(id)));
     const [editModalOpen, setEditModalOpen] = useState(false);
 
     if (!product) {
@@ -54,14 +54,14 @@ const ProductDetails: React.FC = () => {
     const handleDeleteProduct = () => {
         if (id) {
             dispatch(removeProduct(Number(id)));
-            navigate('/products');
+            navigate('/');
         }
     };
 
     return (
         <DetailsContainer>
             <TitleContainer>
-                <IconButton onClick={() => navigate('/products')}>
+                <IconButton onClick={() => navigate('/')}>
                     <ArrowBackIcon />
                 </IconButton>
                 <Typography variant="h4">{product.name}</Typography>

@@ -1,68 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store';
-import { addCategory, updateCategory, removeCategory } from '../slices/categoriesSlice';
-import { updateProductCategory } from '../slices/productsSlice';
-import { Button, Typography, Box, List, ListItem, ListItemText, IconButton, Snackbar, Tooltip } from '@mui/material';
-import { styled } from '@mui/system';
+import { fetchCategories, addCategory, editCategory, removeCategory } from '../slices/categoriesSlice';
+import { Button, Typography, Box, List, ListItem, ListItemText, IconButton, Tooltip } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Link } from 'react-router-dom';
 import Modal from './Modal';
 import CategoryForm from './CategoryForm';
 
-const PageContainer = styled(Box)({
-    padding: '20px',
-    marginTop: '64px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-});
-
-const TitleContainer = styled(Box)({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px',
-    marginBottom: '20px',
-});
-
-const AddCategoryButton = styled(Button)({
-    marginTop: '20px',
-    marginBottom: '20px',
-});
-
 const CategoriesPage: React.FC = () => {
     const dispatch = useDispatch();
-    const products = useSelector((state: RootState) => state.products.products);
-    const categories = useSelector((state: RootState) => state.categories.categories);
+    const categories = useSelector((state: RootState) => state.categories);
     const [modalOpen, setModalOpen] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMessage] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState<{ id: number, name: string } | null>(null);
 
     useEffect(() => {
-        const uniqueCategories = Array.from(new Set(products.map(product => product.category)));
-        uniqueCategories.forEach(categoryName => {
-            if (!categories.has(categoryName)) {
-                dispatch(addCategory(categoryName));
-            }
-        });
-    }, [products, categories, dispatch]);
+        dispatch(fetchCategories());
+    }, [dispatch]);
 
     const handleAddCategory = () => {
         setSelectedCategory(null);
         setModalOpen(true);
     };
 
-    const handleEditCategory = (category: string) => {
+    const handleEditCategory = (category: { id: number, name: string }) => {
         setSelectedCategory(category);
         setModalOpen(true);
     };
 
-    const handleDeleteCategory = (name: string) => {
-        dispatch(removeCategory(name));
+    const handleDeleteCategory = (id: number) => {
+        dispatch(removeCategory(id));
     };
 
     const handleCloseModal = () => {
@@ -70,62 +37,42 @@ const CategoriesPage: React.FC = () => {
         setSelectedCategory(null);
     };
 
-    const handleCloseSnackbar = () => {
-        setSnackbarOpen(false);
-    };
-
-    const handleSubmit = (category: string) => {
+    const handleSubmit = (name: string) => {
         if (selectedCategory) {
-            dispatch(updateCategory({ oldName: selectedCategory, newName: category }));
-            dispatch(updateProductCategory({ oldName: selectedCategory, newName: category }));
+            dispatch(editCategory({ id: selectedCategory.id, name }));
         } else {
-            dispatch(addCategory(category));
+            dispatch(addCategory(name));
         }
         handleCloseModal();
     };
 
     return (
-        <PageContainer>
-            <TitleContainer>
-                <IconButton component={Link} to="/">
-                    <ArrowBackIcon />
-                </IconButton>
-                <Typography variant="h4">Управление категориями</Typography>
-            </TitleContainer>
-            <AddCategoryButton variant="contained" color="primary" onClick={handleAddCategory}>
-                Добавить категорию
-            </AddCategoryButton>
+        <Box>
+            <Typography variant="h4">Categories</Typography>
+            <Box display="flex" justifyContent="flex-start" mb={2} mt={4}>
+                <Button variant="contained" color="primary" onClick={handleAddCategory}>
+                    Добавить категорию
+                </Button>
+            </Box>
             <List>
-                {Array.from(categories).map((category) => {
-                    const hasProducts = products.some(product => product.category === category);
-                    return (
-                        <ListItem key={category}>
-                            <ListItemText primary={category} />
-                            <IconButton onClick={() => handleEditCategory(category)}>
-                                <EditIcon />
+                {categories.map((category) => (
+                    <ListItem key={category.id}>
+                        <ListItemText primary={category.name} />
+                        <IconButton onClick={() => handleEditCategory(category)}>
+                            <EditIcon />
+                        </IconButton>
+                        <Tooltip title="Delete">
+                            <IconButton onClick={() => handleDeleteCategory(category.id)}>
+                                <DeleteIcon />
                             </IconButton>
-                            <Tooltip title={hasProducts ? "Невозможно удалить категорию, так как существуют товары с этой категорией." : ""}>
-                                <span>
-                                    <IconButton onClick={() => handleDeleteCategory(category)} disabled={hasProducts}>
-                                        <DeleteIcon />
-                                    </IconButton>
-                                </span>
-                            </Tooltip>
-                        </ListItem>
-                    );
-                })}
+                        </Tooltip>
+                    </ListItem>
+                ))}
             </List>
             <Modal open={modalOpen} onClose={handleCloseModal} title={selectedCategory ? "Редактирование категории" : "Добавление категории"}>
-                <CategoryForm category={selectedCategory} onSubmit={handleSubmit} />
+                <CategoryForm category={selectedCategory?.name || ''} onSubmit={handleSubmit} />
             </Modal>
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={handleCloseSnackbar}
-                message={snackbarMessage}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-            />
-        </PageContainer>
+        </Box>
     );
 };
 

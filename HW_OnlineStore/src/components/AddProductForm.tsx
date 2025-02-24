@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { addProduct } from '../slices/productsSlice';
 import { RootState } from '../store';
+import { addProduct, fetchProducts } from '../slices/productsSlice';
+import { fetchCategories } from '../slices/categoriesSlice';
 import { TextField, Button, Select, MenuItem, Box } from '@mui/material';
 import { styled } from '@mui/system';
 
@@ -18,32 +19,24 @@ const FormContainer = styled(Box)({
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
 });
 
-const isValidUrl = (url: string) => {
-    try {
-        new URL(url);
-        return true;
-    } catch {
-        return false;
-    }
-};
-
 const AddProductForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     const dispatch = useDispatch();
-    const categories = useSelector((state: RootState) => Array.from(state.categories.categories));
-
+    const categories = useSelector((state: RootState) => state.categories);
     const [product, setProduct] = useState({
         name: '',
         description: '',
         category: '',
         quantity: 0,
-        unit: '',
         price: 0,
+        unit: '',
         img_url: '',
     });
 
-    const handleChange = (
-        e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>
-    ) => {
+    useEffect(() => {
+        dispatch(fetchCategories());
+    }, [dispatch]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
         const { name, value } = e.target;
         setProduct((prevProduct) => ({
             ...prevProduct,
@@ -53,21 +46,9 @@ const AddProductForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!product.category) {
-            alert('Выберите категорию');
-            return;
-        }
-
-        const imgUrl = isValidUrl(product.img_url) ? product.img_url : 'https://placehold.co/300x200/png?text=No+image';
-
-        const newProduct = {
-            ...product,
-            id: Date.now(),
-            img_url: imgUrl,
-        };
-
-        dispatch(addProduct(newProduct));
+        dispatch(addProduct(product)).then(() => {
+            dispatch(fetchProducts());
+        });
         onClose();
     };
 
@@ -99,8 +80,8 @@ const AddProductForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
             >
                 <MenuItem value="">Выберите категорию</MenuItem>
                 {categories.map((cat) => (
-                    <MenuItem key={cat} value={cat}>
-                        {cat}
+                    <MenuItem key={cat.id} value={cat.name}>
+                        {cat.name}
                     </MenuItem>
                 ))}
             </Select>

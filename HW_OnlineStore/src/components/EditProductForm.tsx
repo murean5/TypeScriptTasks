@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../store';
 import { updateProduct } from '../slices/productsSlice';
+import { fetchCategories } from '../slices/categoriesSlice';
 import { TextField, Button, Select, MenuItem, Box } from '@mui/material';
 import { styled } from '@mui/system';
 
@@ -33,11 +35,13 @@ type EditProductFormProps = {
 
 const EditProductForm: React.FC<EditProductFormProps> = ({ product, onClose }) => {
     const dispatch = useDispatch();
+    const categories = useSelector((state: RootState) => state.categories);
     const [editedProduct, setEditedProduct] = useState(product);
 
     useEffect(() => {
         setEditedProduct(product);
-    }, [product]);
+        dispatch(fetchCategories());
+    }, [product, dispatch]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
         const { name, value } = e.target;
@@ -80,9 +84,11 @@ const EditProductForm: React.FC<EditProductFormProps> = ({ product, onClose }) =
                 required
             >
                 <MenuItem value="">Выберите категорию</MenuItem>
-                <MenuItem value="Фрукты">Фрукты</MenuItem>
-                <MenuItem value="Напитки">Напитки</MenuItem>
-                <MenuItem value="Растения">Растения</MenuItem>
+                {categories.map((cat) => (
+                    <MenuItem key={cat.id} value={cat.name}>
+                        {cat.name}
+                    </MenuItem>
+                ))}
             </Select>
             <TextField
                 label="Количество"

@@ -1,88 +1,43 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { getProducts, createProduct, updateProduct as apiUpdateProduct, deleteProduct } from '../services/api';
+import { ProductAttributes } from '../models/Product';
 
-type Product = {
-    id: number;
-    name: string;
-    description: string;
-    category: string;
-    quantity: number;
-    unit: string;
-    price: number;
-    img_url: string;
-};
+export const fetchProducts = createAsyncThunk('products/fetchProducts', async () => {
+    const response = await getProducts();
+    return response.data as ProductAttributes[];
+});
 
-type ProductsState = {
-    products: Product[];
-};
+export const addProduct = createAsyncThunk('products/addProduct', async (product: ProductAttributes) => {
+    const response = await createProduct(product);
+    return response.data;
+});
 
-const initialState: ProductsState = {
-    products: [
-        {
-            id: 1,
-            name: 'Яблоки',
-            description: 'Свежие зеленые яблоки',
-            category: 'Фрукты',
-            quantity: 100,
-            unit: 'кг',
-            price: 1.2,
-            img_url: '../src/images/apples.png',
-        },
-        {
-            id: 2,
-            name: 'Апельсиновый сок',
-            description: 'Свежевыжатый апельсиновый сок',
-            category: 'Напитки',
-            quantity: 50,
-            unit: 'л',
-            price: 3.5,
-            img_url: '../src/images/juice.png',
-        },
-        {
-            id: 3,
-            name: 'Розовое дерево',
-            description: 'Красивое розовое дерево',
-            category: 'Растения',
-            quantity: 20,
-            unit: 'шт',
-            price: 15.0,
-        },
-    ],
-};
+export const updateProduct = createAsyncThunk('products/updateProduct', async ({ id, product }: { id: number, product: ProductAttributes }) => {
+    const response = await apiUpdateProduct(id, product);
+    return response.data;
+});
+
+export const removeProduct = createAsyncThunk('products/removeProduct', async (id: number) => {
+    await deleteProduct(id);
+    return id;
+});
 
 const productsSlice = createSlice({
     name: 'products',
-    initialState,
-    reducers: {
-        addProduct: (state, action: PayloadAction<Product>) => {
-            state.products.push(action.payload);
-        },
-        updateProduct: (state, action: PayloadAction<Product>) => {
-            const index = state.products.findIndex(product => product.id === action.payload.id);
-            if (index !== -1) {
-                state.products[index] = action.payload;
-            }
-        },
-        removeProduct: (state, action: PayloadAction<number>) => {
-            state.products = state.products.filter(product => product.id !== action.payload);
-        },
-        updateProductCategory: (
-            state,
-            action: PayloadAction<{ productId: number; newCategory: string }>
-        ) => {
-            const { productId, newCategory } = action.payload;
-            const product = state.products.find(p => p.id === productId);
-            if (product) {
-                product.category = newCategory;
-            }
-        },
+    initialState: [] as ProductAttributes[],
+    reducers: {},
+    extraReducers: (builder) => {
+        builder
+            .addCase(fetchProducts.fulfilled, (state, action) => action.payload)
+            .addCase(addProduct.fulfilled, (state, action) => { state.push(action.payload); })
+            .addCase(updateProduct.fulfilled, (state, action) => {
+                const index = state.findIndex(product => product.id === action.payload.id);
+                if (index !== -1) state[index] = action.payload;
+            })
+            .addCase(removeProduct.fulfilled, (state, action) => {
+                return state.filter(product => product.id !== action.payload);
+            });
     },
 });
-
-export const {
-    addProduct,
-    updateProduct,
-    removeProduct,
-    updateProductCategory,
-} = productsSlice.actions;
 
 export default productsSlice.reducer;
