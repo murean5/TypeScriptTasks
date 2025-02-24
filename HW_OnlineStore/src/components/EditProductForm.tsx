@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../store';
-import { updateProduct } from '../slices/productsSlice';
-import { fetchCategories } from '../slices/categoriesSlice';
-import { TextField, Button, Select, MenuItem, Box } from '@mui/material';
-import { styled } from '@mui/system';
+import React, {useState, useEffect} from 'react';
+import {useDispatch, useSelector} from 'react-redux';
+import {RootState} from '../store';
+import {updateProduct} from '../slices/productsSlice';
+import {fetchCategories} from '../slices/categoriesSlice';
+import {TextField, Button, Select, MenuItem, Box} from '@mui/material';
+import {styled} from '@mui/system';
 
 const FormContainer = styled(Box)({
     display: 'flex',
@@ -33,7 +33,7 @@ type EditProductFormProps = {
     onClose: () => void;
 };
 
-const EditProductForm: React.FC<EditProductFormProps> = ({ product, onClose }) => {
+const EditProductForm: React.FC<EditProductFormProps> = ({product, onClose}) => {
     const dispatch = useDispatch();
     const categories = useSelector((state: RootState) => state.categories);
     const [editedProduct, setEditedProduct] = useState(product);
@@ -44,7 +44,7 @@ const EditProductForm: React.FC<EditProductFormProps> = ({ product, onClose }) =
     }, [product, dispatch]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | { name?: string; value: unknown }>) => {
-        const { name, value } = e.target;
+        const {name, value} = e.target;
         setEditedProduct((prevProduct) => ({
             ...prevProduct,
             [name as string]: value,
@@ -53,7 +53,7 @@ const EditProductForm: React.FC<EditProductFormProps> = ({ product, onClose }) =
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        dispatch(updateProduct(editedProduct));
+        dispatch(updateProduct({ id: editedProduct.id, product: editedProduct }));
         onClose();
     };
 

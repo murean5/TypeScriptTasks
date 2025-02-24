@@ -4,7 +4,7 @@ import { ProductAttributes } from '../models/Product';
 
 export const fetchProducts = createAsyncThunk('products/fetchProducts', async () => {
     const response = await getProducts();
-    return response.data as ProductAttributes[];
+    return response.data.rows as ProductAttributes[];
 });
 
 export const addProduct = createAsyncThunk('products/addProduct', async (product: ProductAttributes) => {
